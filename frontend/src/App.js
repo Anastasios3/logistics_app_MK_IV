@@ -1,9 +1,35 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { SnackbarProvider } from 'notistack';
+import { Provider } from 'react-redux';
+import store from './store';
+
+// Layouts
+import DashboardLayout from './layouts/DashboardLayout';
+import AuthLayout from './layouts/AuthLayout';
+
+// Auth
 import Login from './pages/Auth/Login';
+
+// Pages
 import Dashboard from './pages/Dashboard/Dashboard';
+import { OrdersList, OrderDetail, OrderForm } from './pages/Orders';
+import { InventoryList } from './pages/Inventory';
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  // In a real app, this would check authentication state
+  // For now, we'll simulate authentication with localStorage
+  const isAuthenticated = localStorage.getItem('mockAuthToken') || false;
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
 
 // Create theme
 const lightTheme = createTheme({
@@ -38,26 +64,67 @@ const lightTheme = createTheme({
 });
 
 function App() {
-  const [mockLoggedIn, setMockLoggedIn] = useState(false);
-  
   const handleLogin = () => {
     // Simulate login for demo purposes
-    setMockLoggedIn(true);
+    localStorage.setItem('mockAuthToken', 'demo-token');
+    localStorage.setItem('mockUserData', JSON.stringify({
+      id: '1',
+      username: 'admin',
+      fullName: 'Demo Admin',
+      email: 'admin@example.com',
+      role: 'admin'
+    }));
+    window.location.href = '/dashboard';
   };
   
   return (
-    <ThemeProvider theme={lightTheme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <Routes>
-          {mockLoggedIn ? (
-            <Route path="*" element={<Dashboard />} />
-          ) : (
-            <Route path="*" element={<Login onLoginClick={handleLogin} />} />
-          )}
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider theme={lightTheme}>
+        <SnackbarProvider maxSnack={3}>
+          <CssBaseline />
+          <BrowserRouter>
+            <Routes>
+              {/* Auth Routes */}
+              <Route element={<AuthLayout />}>
+                <Route path="/login" element={<Login onLoginClick={handleLogin} />} />
+                <Route path="/" element={<Navigate to="/login" replace />} />
+              </Route>
+              
+              {/* Protected Dashboard Routes */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/dashboard" element={<Dashboard />} />
+                
+                {/* Orders Routes */}
+                <Route path="/orders" element={<OrdersList />} />
+                <Route path="/orders/new" element={<OrderForm />} />
+                <Route path="/orders/:id" element={<OrderDetail />} />
+                <Route path="/orders/:id/edit" element={<OrderForm />} />
+                
+                {/* Inventory Routes */}
+                <Route path="/inventory" element={<InventoryList />} />
+                <Route path="/inventory/products/new" element={<InventoryList />} />
+                <Route path="/inventory/products/:id" element={<InventoryList />} />
+                <Route path="/inventory/products/:id/edit" element={<InventoryList />} />
+                <Route path="/inventory/update/:id" element={<InventoryList />} />
+                <Route path="/inventory/transfer/:id" element={<InventoryList />} />
+                <Route path="/inventory/low-stock" element={<InventoryList />} />
+                
+                {/* Add routes for other modules here */}
+              </Route>
+              
+              {/* Redirect all other routes to dashboard */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </SnackbarProvider>
+      </ThemeProvider>
+    </Provider>
   );
 }
 

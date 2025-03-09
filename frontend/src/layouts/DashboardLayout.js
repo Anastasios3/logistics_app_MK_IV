@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -39,8 +39,6 @@ import BrightnessAutoIcon from '@mui/icons-material/BrightnessAuto';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import HelpIcon from '@mui/icons-material/Help';
 
-// Auth context
-import { AuthContext } from '../context/AuthContext';
 
 // Notifications menu component
 import NotificationsMenu from '../components/Notifications/NotificationsMenu';
@@ -146,7 +144,7 @@ function DashboardLayout({ toggleTheme, themeMode }) {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useContext(AuthContext);
+  const user = JSON.parse(localStorage.getItem('mockUserData')) || { username: 'User' };
   
   const [open, setOpen] = useState(true);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
@@ -206,7 +204,8 @@ function DashboardLayout({ toggleTheme, themeMode }) {
   
   // Handle logout
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem('mockAuthToken');
+    localStorage.removeItem('mockUserData');
     navigate('/login');
   };
   

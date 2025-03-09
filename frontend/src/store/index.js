@@ -1,28 +1,26 @@
 import { configureStore } from '@reduxjs/toolkit';
 import ordersReducer from './slices/ordersSlice';
-import productsReducer from './slices/productsSlice';
+import inventoryReducer from './slices/inventorySlice';
 import shipmentsReducer from './slices/shipmentsSlice';
 import customersReducer from './slices/customersSlice';
 import suppliersReducer from './slices/suppliersSlice';
-import dashboardReducer from './slices/dashboardSlice';
-import uiReducer from './slices/uiSlice';
+import reportsReducer from './slices/reportsSlice';
 
 const store = configureStore({
   reducer: {
     orders: ordersReducer,
-    products: productsReducer,
+    inventory: inventoryReducer,
     shipments: shipmentsReducer,
     customers: customersReducer,
     suppliers: suppliersReducer,
-    dashboard: dashboardReducer,
-    ui: uiReducer,
+    reports: reportsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         // Ignore these paths in the state
-        ignoredActions: ['orders/uploadFile/fulfilled'],
-        ignoredPaths: ['orders.files'],
+        ignoredActions: ['orders/uploadFile/fulfilled', 'inventory/uploadImage/fulfilled'],
+        ignoredPaths: ['orders.files', 'inventory.images'],
       },
     }),
 });
